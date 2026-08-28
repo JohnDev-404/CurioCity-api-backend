@@ -161,4 +161,34 @@ router.post('/swap-request', authenticate, async (req: any, res) => {
   }
 });
 
+// 6. 📋 Get current user's hobbies
+router.get('/my-hobbies', authenticate, async (req: any, res) => {
+  try {
+    const userId = req.userId;
+
+    const userHobbies = await UserHobby.find({ userId })
+      .populate('hobbyId') // replaces hobbyId with full hobby object
+      .sort({ type: 1 }); // learn first, then teach
+
+    res.json(userHobbies);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// 7. 🗑️ Remove a hobby from user's list
+router.delete('/user-hobbies/:id', authenticate, async (req: any, res) => {
+  try {
+    const userId = req.userId;
+    const userHobbyId = req.params.id;
+
+    const deleted = await UserHobby.findOneAndDelete({ _id: userHobbyId, userId });
+    if (!deleted) return res.status(404).json({ error: 'Not found' });
+
+    res.json({ message: 'Removed from your hobbies' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 export default router;
