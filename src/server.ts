@@ -12,7 +12,7 @@ console.log('Looking for .env in:', require('path').join(process.cwd(), '.env'))
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 console.log('JWT_SECRET loaded:', process.env.JWT_SECRET ? '✅ Yes' : '❌ Missing');
-
+connectDB().catch(err => console.error('DB connection failed:', err));
 const app = express();
 
 app.get('/', (req, res) => {
