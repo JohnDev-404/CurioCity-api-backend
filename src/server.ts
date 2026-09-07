@@ -15,6 +15,23 @@ console.log('JWT_SECRET loaded:', process.env.JWT_SECRET ? '✅ Yes' : '❌ Miss
 
 const app = express();
 
+app.get('/', (req, res) => {
+  res.json({
+    message: 'CurioCity API is running 🚀',
+    endpoints: {
+      register: 'POST /api/auth/register',
+      login: 'POST /api/auth/login',
+      forgotPassword: 'POST /api/auth/forgot-password',
+      resetPassword: 'POST /api/auth/reset-password',
+      hobbies: 'GET /api/hobbies',
+      roulette: 'GET /api/hobbies/roulette',
+      matches: 'GET /api/hobbies/matches',
+      myHobbies: 'GET /api/hobbies/my-hobbies',
+      profile: 'GET /api/users/me',
+    }
+  });
+});
+
 // ✅ Logger middleware – AFTER app is defined
 app.use((req, res, next) => {
   console.log(`📨 ${req.method} ${req.url}`);
