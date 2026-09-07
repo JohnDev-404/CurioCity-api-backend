@@ -1,3 +1,5 @@
+console.log('auth.ts loaded')
+
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 

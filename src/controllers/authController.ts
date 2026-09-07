@@ -4,8 +4,6 @@ import crypto from 'crypto';
 import { User } from '../models/User';
 import { sendEmail } from '../utils/sendEmail';
 
-const JWT_SECRET = process.env.JWT_SECRET!;
-
 export const register = async (req: Request, res: Response) => {
   try {
     const { email, password, fullName } = req.body;
@@ -15,12 +13,14 @@ export const register = async (req: Request, res: Response) => {
     const user = new User({ email, password, fullName });
     await user.save();
 
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+    // Use process.env.JWT_SECRET directly
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, { expiresIn: '7d' });
     res.status(201).json({
       token,
       user: { id: user._id, email, fullName },
     });
   } catch (err) {
+    console.error('❌ Registration error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -34,12 +34,13 @@ export const login = async (req: Request, res: Response) => {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
 
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, { expiresIn: '7d' });
     res.json({
       token,
       user: { id: user._id, email: user.email, fullName: user.fullName },
     });
   } catch (err) {
+    console.error('❌ Login error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -64,6 +65,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
     res.json({ message: 'Password reset link sent to your email' });
   } catch (err) {
+    console.error('❌ Forgot password error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -84,6 +86,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 
     res.json({ message: 'Password updated successfully' });
   } catch (err) {
+    console.error('❌ Reset password error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };

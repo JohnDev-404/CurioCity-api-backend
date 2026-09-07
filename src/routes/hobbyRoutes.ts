@@ -68,16 +68,14 @@ router.get('/matches', authenticate, async (req: any, res) => {
   try {
     const userId = req.userId;
 
-    // Get all hobbies the user wants to LEARN
     const learnHobbies = await UserHobby.find({ userId, type: 'learn' }).select('hobbyId');
     const learnIds = learnHobbies.map(lh => lh.hobbyId);
 
-    // Find users who TEACH these hobbies AND are willing to LEARN something the current user TEACHES
     const matches = await UserHobby.aggregate([
-      // Step A: Find users who teach the hobbies I want to learn
+      // Step A: Users who teach hobbies I want to learn
       { $match: { hobbyId: { $in: learnIds }, type: 'teach', userId: { $ne: userId } } },
       { $group: { _id: '$userId', teachingHobby: { $first: '$hobbyId' } } },
-      // Step B: For those users, find what they want to learn
+      // Step B: What do they want to learn?
       {
         $lookup: {
           from: 'userhobbies',
@@ -93,7 +91,7 @@ router.get('/matches', authenticate, async (req: any, res) => {
         }
       },
       { $unwind: '$learnTarget' },
-      // Step C: Populate user info and hobby names
+      // Step C: Populate user and hobby details
       {
         $lookup: {
           from: 'users',
@@ -121,14 +119,16 @@ router.get('/matches', authenticate, async (req: any, res) => {
         }
       },
       { $unwind: '$learnHobbyInfo' },
-      // Step D: Format output
+      // Step D: Format output – now INCLUDING IDs
       {
         $project: {
           userId: '$_id',
           fullName: '$user.fullName',
           email: '$user.email',
           teaches: '$teachHobbyInfo.name',
+          teachHobbyId: '$teachingHobby',        // <-- added
           wantsToLearn: '$learnHobbyInfo.name',
+          learnHobbyId: '$learnTarget.hobbyId',  // <-- added
         }
       }
     ]);
@@ -186,6 +186,48 @@ router.delete('/user-hobbies/:id', authenticate, async (req: any, res) => {
     if (!deleted) return res.status(404).json({ error: 'Not found' });
 
     res.json({ message: 'Removed from your hobbies' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// 8. 📨 Get swap requests (incoming & outgoing)
+router.get('/swap-requests', authenticate, async (req: any, res) => {
+  try {
+    const userId = req.userId;
+
+    // Incoming: requests sent to me
+    const incoming = await SwapRequest.find({ targetUserId: userId, status: 'pending' })
+      .populate('requesterId', 'fullName email')
+      .populate('offeringHobbyId', 'name icon')
+      .populate('requestingHobbyId', 'name icon');
+
+    // Outgoing: requests I sent
+    const outgoing = await SwapRequest.find({ requesterId: userId })
+      .populate('targetUserId', 'fullName email')
+      .populate('offeringHobbyId', 'name icon')
+      .populate('requestingHobbyId', 'name icon');
+
+    res.json({ incoming, outgoing });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// 9. ✅ Accept/Reject swap request
+router.put('/swap-requests/:id', authenticate, async (req: any, res) => {
+  try {
+    const userId = req.userId;
+    const { status } = req.body; // 'accepted' or 'rejected'
+    const swapId = req.params.id;
+
+    const swap = await SwapRequest.findOne({ _id: swapId, targetUserId: userId });
+    if (!swap) return res.status(404).json({ error: 'Not found' });
+
+    swap.status = status;
+    await swap.save();
+
+    res.json({ message: `Swap request ${status}`, swap });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
