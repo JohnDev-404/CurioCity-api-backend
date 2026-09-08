@@ -1,21 +1,30 @@
 {
+  "ts-node": {
+    "files": true,
+    "emit": true,
+    "compilerHost": true
+  },
   "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "target": "ES2020",
     "module": "commonjs",
     "lib": ["ES2020"],
+    "sourceMap": true,
+    "typeRoots": ["./node_modules", "./node_modules/@types"],
     "types": ["node"],
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": false,
-    "esModuleInterop": true,
+    "jsx": "react",
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
+    "esModuleInterop": true,
+    "strict": false,
     "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node10",
+    "ignoreDeprecations": "6.0",
     "resolveJsonModule": true,
-    "noImplicitAny": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    // "moduleResolution": "node"
+    "isolatedModules": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
   },
-  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
