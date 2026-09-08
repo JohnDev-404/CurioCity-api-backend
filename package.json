@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+ 
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon --exec tsx src/server.ts",
@@ -38,6 +39,7 @@
     "@types/mongoose": "^5.11.96",
     "@types/node": "^26.5.0",
     "@types/nodemailer": "^8.0.1",
+    "esbuild": "^0.28.2",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.12",
