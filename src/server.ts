@@ -7,8 +7,8 @@ import hobbyRoutes from './routes/hobbyRoutes';
 import userRoutes from './routes/userRoutes';
 import path from 'path';
 
-console.log('Current directory:', process.cwd());
-console.log('Looking for .env in:', require('path').join(process.cwd(), '.env'));
+// console.log('Current directory:', process.cwd());
+// console.log('Looking for .env in:', require('path').join(process.cwd(), '.env'));
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 console.log('JWT_SECRET loaded:', process.env.JWT_SECRET ? '✅ Yes' : '❌ Missing');
