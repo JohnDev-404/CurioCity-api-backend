@@ -7,6 +7,8 @@ export interface IUser extends Document {
   fullName: string;
   bio?: string;
   location?: string;
+  avatarUrl?: string;
+  avatarPublicId?: string;
   isVerified: boolean;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
@@ -20,6 +22,8 @@ const userSchema = new Schema<IUser>(
     fullName: { type: String, required: true },
     bio: { type: String, default: '' },
     location: { type: String, default: '' },
+    avatarUrl: { type: String, default: '' },
+    avatarPublicId: { type: String, default: '' },
     isVerified: { type: Boolean, default: false },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
@@ -27,7 +31,6 @@ const userSchema = new Schema<IUser>(
   { timestamps: true }
 );
 
-// Hash password only when it's changed / new
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
   const salt = await bcrypt.genSalt(10);
