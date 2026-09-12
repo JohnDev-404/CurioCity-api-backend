@@ -9,9 +9,8 @@ import hobbyRoutes from './routes/hobbyRoutes';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = Number(process.env.PORT) || 5001;
 
-// Middleware
 app.use(cors({
   origin: [
     'http://localhost:5173',
@@ -25,12 +24,10 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/hobbies', hobbyRoutes);
 
-// Health check
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -40,7 +37,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Root
 app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to CurioCity API!',
@@ -53,7 +49,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('❌ Error:', err.message);
   res.status(err.status || 500).json({
@@ -61,7 +56,6 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-// Start server only after DB connection
 async function start() {
   try {
     if (!process.env.MONGO_URI) {
