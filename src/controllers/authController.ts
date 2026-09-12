@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import User from '../models/User';
+import { User } from '../models/User';
 import { sendEmail } from '../utils/sendEmail';
 
 export const register = async (req: Request, res: Response) => {
@@ -20,13 +20,11 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email already exists' });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
+    // Create user — the pre-save hook in User.ts hashes the password.
+    // Do NOT hash here, or it will be hashed twice.
     const user = await User.create({
       email,
-      password: hashedPassword,
+      password,
       fullName,
       bio: '',
       location: '',
@@ -123,7 +121,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
     user.resetPasswordExpires = resetTokenExpires;
     await user.save();
 
-    // Send email (optional - if you have nodemailer setup)
+    // Send email (optional — if you have nodemailer setup)
     try {
       await sendEmail({
         to: email,
@@ -169,10 +167,9 @@ export const resetPassword = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid or expired token' });
     }
 
-    // Hash new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    user.password = hashedPassword;
+    // Assign plain password — the pre-save hook will hash it.
+    // Do NOT hash here, or it will be hashed twice.
+    user.password = newPassword;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     await user.save();

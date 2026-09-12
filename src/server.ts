@@ -6,7 +6,6 @@ import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import hobbyRoutes from './routes/hobbyRoutes';
 
-// Load environment variables
 dotenv.config();
 
 const app = express();
@@ -26,38 +25,24 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Database connection
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/curiocity');
-    console.log('✅ MongoDB connected successfully');
-  } catch (error) {
-    console.error('❌ MongoDB connection error:', error);
-    process.exit(1);
-  }
-};
-
-// Connect to MongoDB
-connectDB();
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/hobbies', hobbyRoutes);
 
-// Health check endpoint
+// Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     message: 'CurioCity API is running!',
     timestamp: new Date().toISOString(),
     mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
 });
 
-// Root endpoint
+// Root
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: 'Welcome to CurioCity API!',
     endpoints: {
       health: '/api/health',
@@ -68,15 +53,31 @@ app.get('/', (req, res) => {
   });
 });
 
-// Error handling middleware
+// Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('❌ Error:', err.message);
-  res.status(err.status || 500).json({ 
-    error: err.message || 'Internal server error' 
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal server error'
   });
 });
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
-});
+// Start server only after DB connection
+async function start() {
+  try {
+    if (!process.env.MONGO_URI) {
+      throw new Error('MONGO_URI is not set in environment variables');
+    }
+
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('✅ MongoDB connected successfully');
+
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+start();
